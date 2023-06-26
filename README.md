@@ -8,6 +8,12 @@ Tic Tac Toe is a classic two-player game played on a 3x3 grid. The players take 
 
 ## Demo
 
+
+
+https://github.com/moncefzer/tic_tact_toe_ai/assets/89023907/535376af-3e4d-4cee-964c-b8ab17f3bd4f
+
+
+
 ## Minimax Algorithm
 
 The Minimax algorithm is a decision-making algorithm used in two-player games with perfect information. In our Tic Tac Toe game, it is employed by the AI opponent to determine the optimal moves.
@@ -29,13 +35,13 @@ By employing the Minimax algorithm, the AI opponent in our Tic Tac Toe game beco
 1. Clone the repository:
 
    ```
-   git clone https://github.com/your-username/tic_tac_toe.git
+   git clone https://github.com/moncefzer/tic_tac_toe_ai.git
    ```
 
 2. Navigate to the project directory:
 
    ```
-   cd tic_tac_toe
+   cd tic_tac_toe_ai
    ```
 
 3. Install the required dependencies:
