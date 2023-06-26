@@ -11,6 +11,23 @@ class MinMax {
     return 0;
   }
 
+  static Move getBestMoveWithMinMax(Game game) {
+    List<Move> availableMoves = game.getAvailableMoves();
+    Move bestMove = availableMoves[0];
+    int bestScore = -1000;
+    for (Move move in availableMoves) {
+      Game newGame = Game.clone(game);
+      newGame.moveWithToggle(move);
+      int score = search(newGame, false, move);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+
+    return bestMove;
+  }
+
   static int search(Game game, bool maximizingPlayer, Move move) {
     final eval = evaluate(game, move);
 

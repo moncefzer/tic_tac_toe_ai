@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tic_tact_toe_ai/cubit/game_cubit.dart';
-
+import 'package:tic_tact_toe_ai/res/app_colors.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'entities/entities.dart';
+import 'widgets/borad_widget.dart';
 
 class GamePage extends StatelessWidget {
   const GamePage({super.key});
@@ -10,123 +13,113 @@ class GamePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(context),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.redAccent,
-        onPressed: () {
-          GameCubit.get(context).repeatGame();
-        },
-        child: const Icon(Icons.refresh),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 40),
-          BlocConsumer<GameCubit, GameState>(
-            listener: (context, state) {
-              if (state.isGameOver == true && state.status == GameStatus.win) {
-                final snackBar = SnackBar(
-                  content: Text('Player ${state.player} Win'),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              }
-              if (state.isGameOver == true && state.status == GameStatus.draw) {
-                const snackBar = SnackBar(
-                  content: Text('Draw game'),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              }
-            },
-            builder: (context, state) {
-              final cubit = GameCubit.get(context);
-              var board = cubit.game.board;
-              return Column(
-                children: [
-                  Text(
-                    'Current player : ${state.player}',
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
+      backgroundColor: AppColors.backgroundColor,
+      body: SafeArea(
+        child: BlocConsumer<GameCubit, GameState>(
+          listener: (context, state) {
+            if (state.isGameOver == true && state.status == GameStatus.win) {
+              _windDialog(context, state).show();
+            }
+            if (state.isGameOver == true && state.status == GameStatus.draw) {
+              _drawDialog(context).show();
+            }
+          },
+          builder: (context, state) {
+            final cubit = GameCubit.get(context);
+            var board = cubit.game.board;
+            return Column(
+              children: [
+                const Spacer(flex: 2),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(
+                        text: 'Turn :',
+                      ),
+                      TextSpan(
+                        text: ' player (${state.player})',
+                        style: TextStyle(
+                          color: state.player.value == Cell.X
+                              ? AppColors.red
+                              : AppColors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  style: TextStyle(
+                    fontSize: 30.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const Spacer(flex: 2),
+                BoardWidget(board: board),
+                SizedBox(height: 30.h),
+                InkWell(
+                  onTap: GameCubit.get(context).repeatGame,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 10.w,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.green,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      'Restart Game',
+                      style: TextStyle(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  BoardWidget(board: board),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: const Text('Tic Tac Toe'),
-      backgroundColor: Theme.of(context).primaryColor,
-    );
-  }
-}
-
-class BoardWidget extends StatelessWidget {
-  const BoardWidget({
-    super.key,
-    required this.board,
-  });
-
-  final List<List<Cell>> board;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (int i = 0; i < board.length; i++)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int j = 0; j < board[i].length; j++)
-                CellWidget(row: i, col: j, cellValue: board[i][j]),
-            ],
-          )
-      ],
-    );
-  }
-}
-
-class CellWidget extends StatelessWidget {
-  const CellWidget({
-    super.key,
-    required this.row,
-    required this.col,
-    required this.cellValue,
-  });
-  final int row;
-  final int col;
-  final Cell cellValue;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (cellValue != Cell.empty) return;
-        GameCubit.get(context).makeMove(Move(row, col));
-      },
-      child: Container(
-        margin: const EdgeInsets.all(2),
-        color: cellValue == Cell.empty ? Colors.grey : Colors.redAccent,
-        height: 100,
-        width: 100,
-        alignment: Alignment.center,
-        child: Text(
-          cellValue != Cell.empty ? cellValue.name : ' ',
-          style: const TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-          ),
+                ),
+                const Spacer(flex: 2),
+              ],
+            );
+          },
         ),
       ),
+    );
+  }
+
+  AwesomeDialog _windDialog(BuildContext context, GameState state) {
+    return AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      animType: AnimType.rightSlide,
+      title: 'Win',
+      titleTextStyle: TextStyle(
+        fontSize: 30.sp,
+        fontWeight: FontWeight.w600,
+      ),
+      descTextStyle: TextStyle(
+        fontSize: 17.sp,
+        fontWeight: FontWeight.w500,
+      ),
+      desc: 'Player ${state.player} Win',
+      btnOkOnPress: () {},
+    );
+  }
+
+  AwesomeDialog _drawDialog(BuildContext context) {
+    return AwesomeDialog(
+      context: context,
+      dialogType: DialogType.info,
+      animType: AnimType.rightSlide,
+      title: 'Draw',
+      titleTextStyle: TextStyle(
+        fontSize: 30.sp,
+        fontWeight: FontWeight.w600,
+      ),
+      descTextStyle: TextStyle(
+        fontSize: 17.sp,
+        fontWeight: FontWeight.w500,
+      ),
+      desc: 'This was a draw game',
+      btnOkOnPress: () {},
     );
   }
 }
